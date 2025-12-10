@@ -179,9 +179,9 @@
         // New ChatGPT export format with mapping
         const messages = [];
         Object.values(conversation.mapping).forEach(node => {
-          if (node.message && node.message.content && node.message.content.parts) {
+          if (node.message && node.message.content && node.message.content.parts && node.message.author && node.message.author.role) {
             messages.push({
-              role: node.message.author?.role || 'unknown',
+              role: node.message.author.role,
               content: node.message.content.parts.join('\n'),
               timestamp: node.message.create_time
             });
@@ -205,7 +205,9 @@
     function getConversationDate(conv) {
       const timestamp = conv.create_time || conv.update_time || conv.timestamp;
       if (timestamp) {
-        return new Date(timestamp * 1000).toLocaleString();
+        // Handle both Unix timestamps (seconds) and JavaScript timestamps (milliseconds)
+        const date = timestamp > 10000000000 ? new Date(timestamp) : new Date(timestamp * 1000);
+        return date.toLocaleString();
       }
       return 'Unknown date';
     }
@@ -252,10 +254,14 @@
 
     function formatContent(content) {
       let formatted = escapeHtml(content);
-      // Convert markdown-style code blocks
-      formatted = formatted.replace(/```(\w+)?\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>');
-      // Convert inline code
-      formatted = formatted.replace(/`([^`]+)`/g, '<code>$1</code>');
+      // Convert markdown-style code blocks - content is already escaped
+      formatted = formatted.replace(/```(\w+)?\n([\s\S]*?)```/g, function(match, lang, code) {
+        return '<pre><code>' + code + '</code></pre>';
+      });
+      // Convert inline code - content is already escaped
+      formatted = formatted.replace(/`([^`]+)`/g, function(match, code) {
+        return '<code>' + code + '</code>';
+      });
       // Convert newlines to <br>
       formatted = formatted.replace(/\n/g, '<br>');
       return formatted;
@@ -307,9 +313,11 @@
 
         const messages = extractMessages(conv);
         messages.forEach(msg => {
-          text += `[${msg.role.toUpperCase()}]\n`;
-          text += `${msg.content}\n\n`;
-          text += `${'-'.repeat(40)}\n\n`;
+          if (msg.role && msg.content) {
+            text += `[${msg.role.toUpperCase()}]\n`;
+            text += `${msg.content}\n\n`;
+            text += `${'-'.repeat(40)}\n\n`;
+          }
         });
       });
       downloadFile(text, 'chatgpt-export.txt', 'text/plain');
