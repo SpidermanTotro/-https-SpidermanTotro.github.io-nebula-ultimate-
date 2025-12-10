@@ -23,6 +23,7 @@
     <h1>Nebula Ultimate</h1>
     <p><strong>Free, Offline, Open and Infinitely Expandable Development Platform</strong></p>
     <a class="cta" href="#install">Install Now</a>
+    <a class="cta" href="chatgpt-extractor.html" style="margin-left: 1em; background: #ffe488; color: #0b1124;">ChatGPT Extractor</a>
     <h2>Features</h2>
     <ul class="feature-list">
       <li>🧠 Core AI coding: codegen, refactor, bugfix, explain & more</li>
@@ -33,7 +34,7 @@
       <li>🚀 Asset/template marketplace: submit, rate, moderate</li>
       <li>🌐 Federation: global contests, leaderboards, events</li>
       <li>🗣️ Accessibility: multi-language, voice/touch, onboarding missions</li>
-      <li>🔄 Migration/import/export: Unity, Godot, JetBrains, VS, etc.</li>
+      <li>🔄 Migration/import/export: Unity, Godot, JetBrains, VS, ChatGPT, etc.</li>
       <li>🤖 Onboarding, helpbot, FAQ, advanced docs & guides</li>
     </ul>
 
@@ -69,6 +70,16 @@
       <li>Explore all toolbars: plugin hub, GameDev, analytics, assets/templates, event engine</li>
       <li>Join the first jam, contest, or federation event</li>
       <li>Open helpbot or docs for guides/tips</li>
+    </ul>
+
+    <h2>ChatGPT Export Extractor</h2>
+    <p>Extract and analyze your ChatGPT conversation exports with our dedicated tool:</p>
+    <ul>
+      <li><a href="chatgpt-extractor.html" style="color: #50b6ff;">Launch ChatGPT Extractor</a></li>
+      <li>Upload your ChatGPT export file (conversations.json)</li>
+      <li>View conversation statistics and search through messages</li>
+      <li>Export conversations in multiple formats: JSON, Text, Markdown, or HTML</li>
+      <li>Perfect for archiving, analyzing, or migrating your AI conversations</li>
     </ul>
 
     <h2>Community & Support</h2>

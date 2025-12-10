@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ChatGPT Export Extractor – Nebula Ultimate</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <style>
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #0b1124; color: #e3eaff; margin: 0; }
+    .container { max-width: 1200px; margin: auto; padding: 2rem; }
+    h1 { color: #50b6ff; }
+    h2 { color: #ffe488; margin-top: 2em; }
+    p { font-size: 1.05em; line-height: 1.8; }
+    .upload-section { background: #1a2642; padding: 2rem; border-radius: 8px; margin: 2rem 0; }
+    .btn { background: #50b6ff; color: #0b1124; padding: 0.8em 2em; border-radius: 6px; font-weight: bold; cursor: pointer; border: none; font-size: 1em; transition: 0.3s; }
+    .btn:hover { background: #70c6ff; }
+    .btn:disabled { background: #444; cursor: not-allowed; }
+    .file-input { display: none; }
+    .file-label { display: inline-block; background: #50b6ff; color: #0b1124; padding: 0.8em 2em; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+    .file-label:hover { background: #70c6ff; }
+    .status { margin-top: 1em; padding: 1em; border-radius: 6px; display: none; }
+    .status.success { background: #1a4d2e; color: #6ef2a8; display: block; }
+    .status.error { background: #4d1a1a; color: #f28686; display: block; }
+    .status.info { background: #2a3a5a; color: #a8c7f2; display: block; }
+    .conversation-list { margin-top: 2rem; }
+    .conversation-item { background: #1a2642; padding: 1.5rem; margin: 1rem 0; border-radius: 8px; border-left: 4px solid #50b6ff; }
+    .conversation-title { color: #ffe488; font-size: 1.2em; font-weight: bold; margin-bottom: 0.5em; }
+    .conversation-meta { color: #888; font-size: 0.9em; margin-bottom: 1em; }
+    .message { margin: 1em 0; padding: 1em; border-radius: 6px; }
+    .message.user { background: #2a3a5a; border-left: 3px solid #50b6ff; }
+    .message.assistant { background: #1e2d45; border-left: 3px solid #ffe488; }
+    .message.system { background: #2d1e45; border-left: 3px solid #b488ff; }
+    .message-role { font-weight: bold; color: #ffe488; margin-bottom: 0.5em; text-transform: uppercase; font-size: 0.85em; }
+    .message-content { line-height: 1.6; }
+    .message-content pre { background: #0d1627; padding: 1em; border-radius: 4px; overflow-x: auto; }
+    .message-content code { background: #222e44; padding: 0.2em 0.4em; border-radius: 3px; color: #ffe488; }
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 2rem 0; }
+    .stat-box { background: #1a2642; padding: 1.5rem; border-radius: 8px; text-align: center; }
+    .stat-value { font-size: 2em; color: #50b6ff; font-weight: bold; }
+    .stat-label { color: #888; margin-top: 0.5em; }
+    .export-options { margin: 2rem 0; display: flex; gap: 1rem; flex-wrap: wrap; }
+    .search-box { width: 100%; padding: 0.8em; border-radius: 6px; border: 2px solid #2a3a5a; background: #1a2642; color: #e3eaff; font-size: 1em; margin: 1rem 0; }
+    .search-box:focus { outline: none; border-color: #50b6ff; }
+    .back-link { color: #50b6ff; text-decoration: none; display: inline-block; margin-bottom: 1em; }
+    .back-link:hover { text-decoration: underline; }
+    .footer { margin-top: 3em; padding-top: 2em; border-top: 1px solid #2a3a5a; color: #888; font-size: 0.9em; text-align: center; }
+    @media (max-width: 600px) { .container { padding:1em; } h1 {font-size:1.3em;} .stats { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="README.md" class="back-link">← Back to Nebula Ultimate</a>
+    <h1>ChatGPT Export Extractor</h1>
+    <p><strong>Extract and analyze your ChatGPT conversation exports</strong></p>
+    <p>Upload your ChatGPT export file (conversations.json) to parse, view, and export your conversation data in various formats.</p>
+
+    <div class="upload-section">
+      <h2>Upload ChatGPT Export</h2>
+      <input type="file" id="fileInput" class="file-input" accept=".json" />
+      <label for="fileInput" class="file-label">Choose File</label>
+      <span id="fileName" style="margin-left: 1em; color: #888;">No file selected</span>
+      <div id="status" class="status"></div>
+    </div>
+
+    <div id="statsSection" style="display: none;">
+      <h2>Export Statistics</h2>
+      <div class="stats">
+        <div class="stat-box">
+          <div class="stat-value" id="totalConversations">0</div>
+          <div class="stat-label">Total Conversations</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" id="totalMessages">0</div>
+          <div class="stat-label">Total Messages</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" id="userMessages">0</div>
+          <div class="stat-label">User Messages</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" id="assistantMessages">0</div>
+          <div class="stat-label">Assistant Responses</div>
+        </div>
+      </div>
+
+      <h2>Export Options</h2>
+      <div class="export-options">
+        <button class="btn" onclick="exportAsJSON()">Export as JSON</button>
+        <button class="btn" onclick="exportAsText()">Export as Text</button>
+        <button class="btn" onclick="exportAsMarkdown()">Export as Markdown</button>
+        <button class="btn" onclick="exportAsHTML()">Export as HTML</button>
+      </div>
+
+      <h2>Search Conversations</h2>
+      <input type="text" id="searchBox" class="search-box" placeholder="Search conversations by title or content..." />
+    </div>
+
+    <div id="conversationList" class="conversation-list"></div>
+
+    <div class="footer">
+      ChatGPT Export Extractor – Part of Nebula Ultimate<br>
+      Extract, analyze, and export your ChatGPT conversations with ease
+    </div>
+  </div>
+
+  <script>
+    let conversationsData = [];
+    let filteredConversations = [];
+
+    const fileInput = document.getElementById('fileInput');
+    const fileName = document.getElementById('fileName');
+    const status = document.getElementById('status');
+    const searchBox = document.getElementById('searchBox');
+
+    fileInput.addEventListener('change', handleFileSelect);
+    searchBox.addEventListener('input', handleSearch);
+
+    function handleFileSelect(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      fileName.textContent = file.name;
+      showStatus('info', 'Loading file...');
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const data = JSON.parse(e.target.result);
+          processExportData(data);
+        } catch (error) {
+          showStatus('error', 'Error parsing JSON: ' + error.message);
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function processExportData(data) {
+      try {
+        // Handle different ChatGPT export formats
+        conversationsData = Array.isArray(data) ? data : (data.conversations || [data]);
+        
+        if (conversationsData.length === 0) {
+          showStatus('error', 'No conversations found in the export file.');
+          return;
+        }
+
+        filteredConversations = [...conversationsData];
+        calculateStats();
+        displayConversations();
+        document.getElementById('statsSection').style.display = 'block';
+        showStatus('success', `Successfully loaded ${conversationsData.length} conversation(s)!`);
+      } catch (error) {
+        showStatus('error', 'Error processing data: ' + error.message);
+      }
+    }
+
+    function calculateStats() {
+      let totalMessages = 0;
+      let userMessages = 0;
+      let assistantMessages = 0;
+
+      conversationsData.forEach(conv => {
+        const messages = extractMessages(conv);
+        totalMessages += messages.length;
+        messages.forEach(msg => {
+          if (msg.role === 'user') userMessages++;
+          else if (msg.role === 'assistant') assistantMessages++;
+        });
+      });
+
+      document.getElementById('totalConversations').textContent = conversationsData.length;
+      document.getElementById('totalMessages').textContent = totalMessages;
+      document.getElementById('userMessages').textContent = userMessages;
+      document.getElementById('assistantMessages').textContent = assistantMessages;
+    }
+
+    function extractMessages(conversation) {
+      // Handle different conversation structures
+      if (conversation.mapping) {
+        // New ChatGPT export format with mapping
+        const messages = [];
+        Object.values(conversation.mapping).forEach(node => {
+          if (node.message && node.message.content && node.message.content.parts) {
+            messages.push({
+              role: node.message.author?.role || 'unknown',
+              content: node.message.content.parts.join('\n'),
+              timestamp: node.message.create_time
+            });
+          }
+        });
+        return messages;
+      } else if (conversation.messages) {
+        // Simple messages array format
+        return conversation.messages;
+      } else if (conversation.role && conversation.content) {
+        // Single message format
+        return [conversation];
+      }
+      return [];
+    }
+
+    function getConversationTitle(conv) {
+      return conv.title || conv.name || `Conversation ${conversationsData.indexOf(conv) + 1}`;
+    }
+
+    function getConversationDate(conv) {
+      const timestamp = conv.create_time || conv.update_time || conv.timestamp;
+      if (timestamp) {
+        return new Date(timestamp * 1000).toLocaleString();
+      }
+      return 'Unknown date';
+    }
+
+    function displayConversations() {
+      const listElement = document.getElementById('conversationList');
+      listElement.innerHTML = '';
+
+      if (filteredConversations.length === 0) {
+        listElement.innerHTML = '<p style="text-align: center; color: #888;">No conversations match your search.</p>';
+        return;
+      }
+
+      filteredConversations.forEach((conv, index) => {
+        const convElement = document.createElement('div');
+        convElement.className = 'conversation-item';
+
+        const title = getConversationTitle(conv);
+        const date = getConversationDate(conv);
+        const messages = extractMessages(conv);
+
+        let messagesHTML = '';
+        messages.forEach(msg => {
+          if (msg.role && msg.content) {
+            const contentHTML = formatContent(msg.content);
+            messagesHTML += `
+              <div class="message ${msg.role}">
+                <div class="message-role">${msg.role}</div>
+                <div class="message-content">${contentHTML}</div>
+              </div>
+            `;
+          }
+        });
+
+        convElement.innerHTML = `
+          <div class="conversation-title">${escapeHtml(title)}</div>
+          <div class="conversation-meta">${date} • ${messages.length} messages</div>
+          ${messagesHTML}
+        `;
+
+        listElement.appendChild(convElement);
+      });
+    }
+
+    function formatContent(content) {
+      let formatted = escapeHtml(content);
+      // Convert markdown-style code blocks
+      formatted = formatted.replace(/```(\w+)?\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>');
+      // Convert inline code
+      formatted = formatted.replace(/`([^`]+)`/g, '<code>$1</code>');
+      // Convert newlines to <br>
+      formatted = formatted.replace(/\n/g, '<br>');
+      return formatted;
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function handleSearch(event) {
+      const query = event.target.value.toLowerCase();
+      
+      if (!query) {
+        filteredConversations = [...conversationsData];
+      } else {
+        filteredConversations = conversationsData.filter(conv => {
+          const title = getConversationTitle(conv).toLowerCase();
+          const messages = extractMessages(conv);
+          const hasMatchingMessage = messages.some(msg => 
+            msg.content && msg.content.toLowerCase().includes(query)
+          );
+          return title.includes(query) || hasMatchingMessage;
+        });
+      }
+      
+      displayConversations();
+    }
+
+    function showStatus(type, message) {
+      status.className = `status ${type}`;
+      status.textContent = message;
+      status.style.display = 'block';
+    }
+
+    function exportAsJSON() {
+      const dataStr = JSON.stringify(conversationsData, null, 2);
+      downloadFile(dataStr, 'chatgpt-export.json', 'application/json');
+    }
+
+    function exportAsText() {
+      let text = '';
+      conversationsData.forEach((conv, index) => {
+        text += `\n${'='.repeat(80)}\n`;
+        text += `CONVERSATION ${index + 1}: ${getConversationTitle(conv)}\n`;
+        text += `Date: ${getConversationDate(conv)}\n`;
+        text += `${'='.repeat(80)}\n\n`;
+
+        const messages = extractMessages(conv);
+        messages.forEach(msg => {
+          text += `[${msg.role.toUpperCase()}]\n`;
+          text += `${msg.content}\n\n`;
+          text += `${'-'.repeat(40)}\n\n`;
+        });
+      });
+      downloadFile(text, 'chatgpt-export.txt', 'text/plain');
+    }
+
+    function exportAsMarkdown() {
+      let markdown = '# ChatGPT Export\n\n';
+      conversationsData.forEach((conv, index) => {
+        markdown += `## ${getConversationTitle(conv)}\n\n`;
+        markdown += `**Date:** ${getConversationDate(conv)}\n\n`;
+
+        const messages = extractMessages(conv);
+        messages.forEach(msg => {
+          markdown += `### ${msg.role.charAt(0).toUpperCase() + msg.role.slice(1)}\n\n`;
+          markdown += `${msg.content}\n\n`;
+          markdown += `---\n\n`;
+        });
+        markdown += `\n`;
+      });
+      downloadFile(markdown, 'chatgpt-export.md', 'text/markdown');
+    }
+
+    function exportAsHTML() {
+      let html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ChatGPT Export</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 900px; margin: 2rem auto; padding: 0 1rem; background: #f5f5f5; }
+    .conversation { background: white; padding: 2rem; margin: 2rem 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .title { font-size: 1.5em; font-weight: bold; color: #333; margin-bottom: 0.5em; }
+    .meta { color: #666; margin-bottom: 1em; }
+    .message { margin: 1.5em 0; padding: 1em; border-radius: 6px; }
+    .user { background: #e3f2fd; border-left: 4px solid #2196F3; }
+    .assistant { background: #f3e5f5; border-left: 4px solid #9C27B0; }
+    .role { font-weight: bold; text-transform: uppercase; font-size: 0.85em; color: #555; margin-bottom: 0.5em; }
+    .content { line-height: 1.6; }
+    pre { background: #f5f5f5; padding: 1em; border-radius: 4px; overflow-x: auto; }
+    code { background: #f0f0f0; padding: 0.2em 0.4em; border-radius: 3px; }
+  </style>
+</head>
+<body>
+  <h1>ChatGPT Export</h1>
+`;
+
+      conversationsData.forEach((conv, index) => {
+        html += `  <div class="conversation">
+    <div class="title">${escapeHtml(getConversationTitle(conv))}</div>
+    <div class="meta">${getConversationDate(conv)}</div>
+`;
+        const messages = extractMessages(conv);
+        messages.forEach(msg => {
+          html += `    <div class="message ${msg.role}">
+      <div class="role">${msg.role}</div>
+      <div class="content">${formatContent(msg.content)}</div>
+    </div>
+`;
+        });
+        html += `  </div>\n`;
+      });
+
+      html += `</body>
+</html>`;
+      downloadFile(html, 'chatgpt-export.html', 'text/html');
+    }
+
+    function downloadFile(content, filename, mimeType) {
+      const blob = new Blob([content], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showStatus('success', `Downloaded ${filename}`);
+    }
+  </script>
+</body>
+</html>
