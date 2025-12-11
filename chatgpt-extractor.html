@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <title>ChatGPT Export Extractor – Nebula Ultimate</title>
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta name="description" content="Extract and analyze your ChatGPT conversation exports. Free, client-side tool with multi-format export support.">
+  <meta name="keywords" content="ChatGPT, export, extractor, conversation, analysis, JSON, markdown">
+  <meta name="theme-color" content="#0b1124">
   <style>
     body { font-family: 'Segoe UI', Arial, sans-serif; background: #0b1124; color: #e3eaff; margin: 0; }
     .container { max-width: 1200px; margin: auto; padding: 2rem; }
@@ -48,13 +51,56 @@
     .instructions li { margin: 0.5em 0; line-height: 1.6; }
     .demo-btn { background: #ffe488; color: #0b1124; margin-left: 1em; }
     .demo-btn:hover { background: #ffed9f; }
-    @media (max-width: 600px) { .container { padding:1em; } h1 {font-size:1.3em;} .stats { grid-template-columns: 1fr; } }
+    /* Accessibility improvements */
+    .visually-hidden { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+    .btn:focus, .file-label:focus, .search-box:focus { outline: 3px solid #50b6ff; outline-offset: 2px; }
+    .skip-link { position: absolute; top: -40px; left: 0; background: #50b6ff; color: #0b1124; padding: 8px; z-index: 100; }
+    .skip-link:focus { top: 0; }
+    /* Language selector */
+    .lang-selector { position: absolute; top: 1rem; right: 1rem; }
+    .lang-selector select { background: #1a2642; color: #e3eaff; border: 2px solid #2a3a5a; border-radius: 6px; padding: 0.5em 1em; cursor: pointer; }
+    .lang-selector select:focus { outline: none; border-color: #50b6ff; }
+    /* Pagination */
+    .pagination { display: flex; justify-content: center; align-items: center; gap: 1rem; margin: 2rem 0; flex-wrap: wrap; }
+    .pagination button { min-width: 80px; }
+    .pagination-info { color: #888; font-size: 0.9em; }
+    .per-page-selector { display: flex; align-items: center; gap: 0.5rem; margin: 1rem 0; }
+    .per-page-selector select { background: #1a2642; color: #e3eaff; border: 2px solid #2a3a5a; border-radius: 6px; padding: 0.5em; }
+    /* Loading indicator */
+    .loading { text-align: center; padding: 2rem; }
+    .spinner { border: 4px solid #2a3a5a; border-top: 4px solid #50b6ff; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    /* Responsive design */
+    @media (max-width: 600px) { 
+      .container { padding:1em; } 
+      h1 {font-size:1.3em;} 
+      .stats { grid-template-columns: 1fr; }
+      .export-options { flex-direction: column; }
+      .export-options .btn { width: 100%; }
+      .lang-selector { position: static; margin-bottom: 1rem; }
+      .demo-btn { margin-left: 0; margin-top: 1em; display: block; width: 100%; }
+    }
+    /* Print styles */
+    @media print {
+      .upload-section, .export-options, .search-box, .back-link, .lang-selector, .pagination { display: none; }
+      body { background: white; color: black; }
+      .conversation-item { page-break-inside: avoid; }
+    }
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to main content</a>
   <div class="container">
-    <a href="index.html" class="back-link">← Back to Nebula Ultimate</a>
-    <h1>ChatGPT Export Extractor</h1>
+    <div class="lang-selector">
+      <label for="languageSelect" class="visually-hidden">Language</label>
+      <select id="languageSelect" aria-label="Select language">
+        <option value="en">English</option>
+        <option value="es">Español</option>
+        <option value="fr">Français</option>
+      </select>
+    </div>
+    <a href="index.html" class="back-link" aria-label="Go back to Nebula Ultimate homepage">← <span data-i18n="backLink">Back to Nebula Ultimate</span></a>
+    <h1 id="main-content" data-i18n="title">ChatGPT Export Extractor</h1>
     <p><strong>Extract and analyze your ChatGPT conversation exports</strong></p>
     <p>Upload your ChatGPT export file (conversations.json) to parse, view, and export your conversation data in various formats.</p>
 
@@ -110,10 +156,33 @@
       </div>
 
       <h2>Search Conversations</h2>
-      <input type="text" id="searchBox" class="search-box" placeholder="Search conversations by title or content..." />
+      <input type="text" id="searchBox" class="search-box" placeholder="Search conversations by title or content..." 
+             aria-label="Search conversations" />
+      
+      <div class="per-page-selector" id="perPageSection" style="display: none;">
+        <label for="perPageSelect">Per page:</label>
+        <select id="perPageSelect" aria-label="Results per page">
+          <option value="10">10</option>
+          <option value="25" selected>25</option>
+          <option value="50">50</option>
+          <option value="100">100</option>
+        </select>
+      </div>
     </div>
 
-    <div id="conversationList" class="conversation-list"></div>
+    <div class="pagination" id="paginationTop" style="display: none;" role="navigation" aria-label="Pagination">
+      <button class="btn" id="prevPageTop" aria-label="Previous page">Previous</button>
+      <span class="pagination-info" id="paginationInfoTop" aria-live="polite"></span>
+      <button class="btn" id="nextPageTop" aria-label="Next page">Next</button>
+    </div>
+
+    <div id="conversationList" class="conversation-list" role="main" aria-live="polite" aria-atomic="false"></div>
+
+    <div class="pagination" id="paginationBottom" style="display: none;" role="navigation" aria-label="Pagination">
+      <button class="btn" id="prevPageBottom" aria-label="Previous page">Previous</button>
+      <span class="pagination-info" id="paginationInfoBottom" aria-live="polite"></span>
+      <button class="btn" id="nextPageBottom" aria-label="Next page">Next</button>
+    </div>
 
     <div class="footer">
       ChatGPT Export Extractor – Part of Nebula Ultimate<br>
@@ -121,24 +190,128 @@
     </div>
   </div>
 
+  <script src="i18n.js"></script>
+  <script src="chatgpt-extractor-core.js"></script>
   <script>
     let conversationsData = [];
     let filteredConversations = [];
+    let currentPage = 1;
+    let perPage = 25;
 
     const fileInput = document.getElementById('fileInput');
     const fileName = document.getElementById('fileName');
     const status = document.getElementById('status');
     const searchBox = document.getElementById('searchBox');
+    const languageSelect = document.getElementById('languageSelect');
+    const perPageSelect = document.getElementById('perPageSelect');
 
+    // Initialize language
+    if (typeof i18n !== 'undefined') {
+      languageSelect.value = i18n.getLanguage();
+      updateUILanguage();
+      languageSelect.addEventListener('change', handleLanguageChange);
+    }
+
+    // Event listeners
     fileInput.addEventListener('change', handleFileSelect);
     searchBox.addEventListener('input', handleSearch);
+    perPageSelect.addEventListener('change', handlePerPageChange);
+    
+    // Pagination event listeners
+    ['prevPageTop', 'prevPageBottom'].forEach(id => {
+      document.getElementById(id)?.addEventListener('click', () => goToPage(currentPage - 1));
+    });
+    ['nextPageTop', 'nextPageBottom'].forEach(id => {
+      document.getElementById(id)?.addEventListener('click', () => goToPage(currentPage + 1));
+    });
+
+    // Keyboard navigation
+    document.addEventListener('keydown', handleKeyboardNav);
+
+    function handleLanguageChange(event) {
+      if (typeof i18n !== 'undefined') {
+        i18n.setLanguage(event.target.value);
+        updateUILanguage();
+        if (conversationsData.length > 0) {
+          displayConversations();
+        }
+      }
+    }
+
+    function updateUILanguage() {
+      if (typeof i18n === 'undefined') return;
+      
+      document.querySelectorAll('[data-i18n]').forEach(element => {
+        const key = element.getAttribute('data-i18n');
+        element.textContent = i18n.t(key);
+      });
+      
+      // Update placeholders and aria-labels
+      if (searchBox) searchBox.placeholder = i18n.t('searchPlaceholder');
+    }
+
+    function handleKeyboardNav(event) {
+      // Escape key clears search
+      if (event.key === 'Escape' && document.activeElement === searchBox) {
+        searchBox.value = '';
+        handleSearch({ target: searchBox });
+      }
+    }
+
+    function handlePerPageChange(event) {
+      perPage = parseInt(event.target.value);
+      currentPage = 1;
+      displayConversations();
+    }
+
+    function goToPage(page) {
+      const totalPages = Math.ceil(filteredConversations.length / perPage);
+      if (page < 1 || page > totalPages) return;
+      currentPage = page;
+      displayConversations();
+      // Scroll to top of conversation list
+      document.getElementById('conversationList').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function updatePagination() {
+      const totalPages = Math.ceil(filteredConversations.length / perPage);
+      const start = (currentPage - 1) * perPage + 1;
+      const end = Math.min(currentPage * perPage, filteredConversations.length);
+      
+      const infoText = typeof i18n !== 'undefined' 
+        ? i18n.t('showingResults', { start, end, total: filteredConversations.length })
+        : `Showing ${start}-${end} of ${filteredConversations.length}`;
+      
+      ['paginationInfoTop', 'paginationInfoBottom'].forEach(id => {
+        const element = document.getElementById(id);
+        if (element) element.textContent = infoText;
+      });
+      
+      ['prevPageTop', 'prevPageBottom'].forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) btn.disabled = currentPage === 1;
+      });
+      
+      ['nextPageTop', 'nextPageBottom'].forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) btn.disabled = currentPage === totalPages;
+      });
+      
+      // Show/hide pagination
+      const showPagination = filteredConversations.length > perPage;
+      ['paginationTop', 'paginationBottom', 'perPageSection'].forEach(id => {
+        const element = document.getElementById(id);
+        if (element) element.style.display = showPagination ? 'flex' : 'none';
+      });
+    }
 
     function handleFileSelect(event) {
       const file = event.target.files[0];
       if (!file) return;
 
       fileName.textContent = file.name;
-      showStatus('info', 'Loading file...');
+      const loadingMsg = typeof i18n !== 'undefined' ? i18n.t('loadingFile') : 'Loading file...';
+      showStatus('info', loadingMsg);
 
       const reader = new FileReader();
       reader.onload = function(e) {
@@ -146,7 +319,10 @@
           const data = JSON.parse(e.target.result);
           processExportData(data);
         } catch (error) {
-          showStatus('error', 'Error parsing JSON: ' + error.message);
+          const errorMsg = typeof i18n !== 'undefined'
+            ? i18n.t('errorParsing', { error: error.message })
+            : 'Error parsing JSON: ' + error.message;
+          showStatus('error', errorMsg);
         }
       };
       reader.readAsText(file);
@@ -154,21 +330,32 @@
 
     function processExportData(data) {
       try {
-        // Handle different ChatGPT export formats
-        conversationsData = Array.isArray(data) ? data : (data.conversations || [data]);
-        
-        if (conversationsData.length === 0) {
-          showStatus('error', 'No conversations found in the export file.');
-          return;
+        // Use core module if available
+        if (typeof ChatGPTExtractorCore !== 'undefined') {
+          conversationsData = ChatGPTExtractorCore.processExportData(data);
+        } else {
+          // Fallback to local implementation
+          conversationsData = Array.isArray(data) ? data : (data.conversations || [data]);
+          if (conversationsData.length === 0) {
+            throw new Error('No conversations found in the export file');
+          }
         }
 
         filteredConversations = [...conversationsData];
+        currentPage = 1; // Reset pagination
         calculateStats();
         displayConversations();
         document.getElementById('statsSection').style.display = 'block';
-        showStatus('success', `Successfully loaded ${conversationsData.length} conversation(s)!`);
+        
+        const successMsg = typeof i18n !== 'undefined'
+          ? i18n.t('successfullyLoaded', { count: conversationsData.length })
+          : `Successfully loaded ${conversationsData.length} conversation(s)!`;
+        showStatus('success', successMsg);
       } catch (error) {
-        showStatus('error', 'Error processing data: ' + error.message);
+        const errorMsg = typeof i18n !== 'undefined'
+          ? i18n.t('errorProcessing', { error: error.message })
+          : 'Error processing data: ' + error.message;
+        showStatus('error', errorMsg);
       }
     }
 
@@ -236,11 +423,27 @@
       listElement.innerHTML = '';
 
       if (filteredConversations.length === 0) {
-        listElement.innerHTML = '<p style="text-align: center; color: #888;">No conversations match your search.</p>';
+        const noMatchText = typeof i18n !== 'undefined' ? i18n.t('noMatches') : 'No conversations match your search.';
+        listElement.innerHTML = `<p style="text-align: center; color: #888;">${noMatchText}</p>`;
+        updatePagination();
         return;
       }
 
-      filteredConversations.forEach((conv, index) => {
+      // Calculate pagination
+      const startIndex = (currentPage - 1) * perPage;
+      const endIndex = Math.min(startIndex + perPage, filteredConversations.length);
+      const paginatedConversations = filteredConversations.slice(startIndex, endIndex);
+
+      // Show loading indicator for large datasets
+      if (filteredConversations.length > 100 && paginatedConversations.length > 0) {
+        listElement.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+      }
+
+      // Use setTimeout to prevent UI blocking for large datasets
+      setTimeout(() => {
+        listElement.innerHTML = '';
+        
+        paginatedConversations.forEach((conv, index) => {
         const convElement = document.createElement('div');
         convElement.className = 'conversation-item';
 
@@ -268,7 +471,10 @@
         `;
 
         listElement.appendChild(convElement);
-      });
+        });
+        
+        updatePagination();
+      }, 10); // Small delay to prevent UI blocking
     }
 
     function formatContent(content) {
@@ -298,16 +504,22 @@
       if (!query) {
         filteredConversations = [...conversationsData];
       } else {
-        filteredConversations = conversationsData.filter(conv => {
-          const title = getConversationTitle(conv).toLowerCase();
-          const messages = extractMessages(conv);
-          const hasMatchingMessage = messages.some(msg => 
-            msg.content && msg.content.toLowerCase().includes(query)
-          );
-          return title.includes(query) || hasMatchingMessage;
-        });
+        // Use core module if available, otherwise use local implementation
+        if (typeof ChatGPTExtractorCore !== 'undefined') {
+          filteredConversations = ChatGPTExtractorCore.searchConversations(conversationsData, query);
+        } else {
+          filteredConversations = conversationsData.filter(conv => {
+            const title = getConversationTitle(conv).toLowerCase();
+            const messages = extractMessages(conv);
+            const hasMatchingMessage = messages.some(msg => 
+              msg.content && msg.content.toLowerCase().includes(query)
+            );
+            return title.includes(query) || hasMatchingMessage;
+          });
+        }
       }
       
+      currentPage = 1; // Reset to first page on search
       displayConversations();
     }
 
@@ -318,11 +530,20 @@
     }
 
     function exportAsJSON() {
-      const dataStr = JSON.stringify(conversationsData, null, 2);
+      const dataStr = typeof ChatGPTExtractorCore !== 'undefined'
+        ? ChatGPTExtractorCore.exportAsJSON(conversationsData)
+        : JSON.stringify(conversationsData, null, 2);
       downloadFile(dataStr, 'chatgpt-export.json', 'application/json');
     }
 
     function exportAsText() {
+      const text = typeof ChatGPTExtractorCore !== 'undefined'
+        ? ChatGPTExtractorCore.exportAsText(conversationsData)
+        : generateTextExport();
+      downloadFile(text, 'chatgpt-export.txt', 'text/plain');
+    }
+
+    function generateTextExport() {
       let text = '';
       conversationsData.forEach((conv, index) => {
         text += `\n${'='.repeat(80)}\n`;
@@ -339,31 +560,49 @@
           }
         });
       });
-      downloadFile(text, 'chatgpt-export.txt', 'text/plain');
+      return text;
     }
 
     function exportAsMarkdown() {
+      const markdown = typeof ChatGPTExtractorCore !== 'undefined'
+        ? ChatGPTExtractorCore.exportAsMarkdown(conversationsData)
+        : generateMarkdownExport();
+      downloadFile(markdown, 'chatgpt-export.md', 'text/markdown');
+    }
+
+    function generateMarkdownExport() {
       let markdown = '# ChatGPT Export\n\n';
       conversationsData.forEach((conv, index) => {
-        markdown += `## ${getConversationTitle(conv)}\n\n`;
+        markdown += `## ${getConversationTitle(conv, index)}\n\n`;
         markdown += `**Date:** ${getConversationDate(conv)}\n\n`;
 
         const messages = extractMessages(conv);
         messages.forEach(msg => {
-          markdown += `### ${msg.role.charAt(0).toUpperCase() + msg.role.slice(1)}\n\n`;
-          markdown += `${msg.content}\n\n`;
-          markdown += `---\n\n`;
+          if (msg.role && msg.content) {
+            markdown += `### ${msg.role.charAt(0).toUpperCase() + msg.role.slice(1)}\n\n`;
+            markdown += `${msg.content}\n\n`;
+            markdown += `---\n\n`;
+          }
         });
         markdown += `\n`;
       });
-      downloadFile(markdown, 'chatgpt-export.md', 'text/markdown');
+      return markdown;
     }
 
+    // Use core module for HTML export if available
     function exportAsHTML() {
+      const html = typeof ChatGPTExtractorCore !== 'undefined'
+        ? ChatGPTExtractorCore.exportAsHTML(conversationsData)
+        : generateHTMLExport();
+      downloadFile(html, 'chatgpt-export.html', 'text/html');
+    }
+
+    function generateHTMLExport() {
       let html = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ChatGPT Export</title>
   <style>
     body { font-family: Arial, sans-serif; max-width: 900px; margin: 2rem auto; padding: 0 1rem; background: #f5f5f5; }
@@ -373,6 +612,7 @@
     .message { margin: 1.5em 0; padding: 1em; border-radius: 6px; }
     .user { background: #e3f2fd; border-left: 4px solid #2196F3; }
     .assistant { background: #f3e5f5; border-left: 4px solid #9C27B0; }
+    .system { background: #fff3e0; border-left: 4px solid #FF9800; }
     .role { font-weight: bold; text-transform: uppercase; font-size: 0.85em; color: #555; margin-bottom: 0.5em; }
     .content { line-height: 1.6; }
     pre { background: #f5f5f5; padding: 1em; border-radius: 4px; overflow-x: auto; }
@@ -385,23 +625,25 @@
 
       conversationsData.forEach((conv, index) => {
         html += `  <div class="conversation">
-    <div class="title">${escapeHtml(getConversationTitle(conv))}</div>
+    <div class="title">${escapeHtml(getConversationTitle(conv, index))}</div>
     <div class="meta">${getConversationDate(conv)}</div>
 `;
         const messages = extractMessages(conv);
         messages.forEach(msg => {
-          html += `    <div class="message ${msg.role}">
+          if (msg.role && msg.content) {
+            html += `    <div class="message ${msg.role}">
       <div class="role">${msg.role}</div>
       <div class="content">${formatContent(msg.content)}</div>
     </div>
 `;
+          }
         });
         html += `  </div>\n`;
       });
 
       html += `</body>
 </html>`;
-      downloadFile(html, 'chatgpt-export.html', 'text/html');
+      return html;
     }
 
     function downloadFile(content, filename, mimeType) {
@@ -410,16 +652,22 @@
       const a = document.createElement('a');
       a.href = url;
       a.download = filename;
+      a.setAttribute('aria-label', `Download ${filename}`);
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      showStatus('success', `Downloaded ${filename}`);
+      
+      const message = typeof i18n !== 'undefined'
+        ? i18n.t('downloaded', { filename })
+        : `Downloaded ${filename}`;
+      showStatus('success', message);
     }
 
     function loadDemoData() {
       fileName.textContent = 'sample-chatgpt-export.json (Demo)';
-      showStatus('info', 'Loading demo data...');
+      const loadingMsg = typeof i18n !== 'undefined' ? i18n.t('loadingDemo') : 'Loading demo data...';
+      showStatus('info', loadingMsg);
       
       // Load the sample data file
       fetch('sample-chatgpt-export.json')
@@ -428,7 +676,10 @@
           processExportData(data);
         })
         .catch(error => {
-          showStatus('error', 'Error loading demo data: ' + error.message);
+          const errorMsg = typeof i18n !== 'undefined'
+            ? i18n.t('errorLoadingDemo', { error: error.message })
+            : 'Error loading demo data: ' + error.message;
+          showStatus('error', errorMsg);
         });
     }
   </script>
