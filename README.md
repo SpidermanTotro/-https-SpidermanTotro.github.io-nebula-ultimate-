@@ -1,89 +1,47 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Nebula Ultimate – Install & Launch</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <style>
-    body { font-family: 'Segoe UI', Arial, sans-serif; background: #0b1124; color: #e3eaff; margin: 0; }
-    .container { max-width: 900px; margin: auto; padding: 2rem; }
-    h1 { color: #50b6ff; }
-    h2 { color: #ffe488; margin-top: 2em; }
-    ul, li { font-size: 1.05em; line-height: 1.8; }
-    .cta { background: #50b6ff; color: #0b1124; padding: 0.6em 2em; border-radius: 6px; font-weight: bold; display: inline-block; margin-top: 1em; text-decoration: none; }
-    .feature-list { margin-bottom: 1.5em; }
-    .footer { margin-top: 2em; color: #888; font-size: 0.9em; text-align: center; }
-    .logo { max-width:180px; margin-bottom: 2em;}
-    code, pre { background:#222e44; padding: 0.2em 0.4em; border-radius: 3px; color: #ffe488;}
-    @media (max-width: 600px) { .container { padding:1em; } h1 {font-size:1.3em;} }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>Nebula Ultimate</h1>
-    <p><strong>Free, Offline, Open and Infinitely Expandable Development Platform</strong></p>
-    <a class="cta" href="#install">Install Now</a>
-    <h2>Features</h2>
-    <ul class="feature-list">
-      <li>🧠 Core AI coding: codegen, refactor, bugfix, explain & more</li>
-      <li>📋 Project boards, team/family/studio flows, attachments, collab</li>
-      <li>🌌 Plugin & extension hub: community-driven, easy upgrades</li>
-      <li>🎮 GameDev toolkit: multiplayer, jams, events, device mapping (VR, gamepad, tablet)</li>
-      <li>📊 Analytics & dashboard: real-time stats, logs, visualizations</li>
-      <li>🚀 Asset/template marketplace: submit, rate, moderate</li>
-      <li>🌐 Federation: global contests, leaderboards, events</li>
-      <li>🗣️ Accessibility: multi-language, voice/touch, onboarding missions</li>
-      <li>🔄 Migration/import/export: Unity, Godot, JetBrains, VS, etc.</li>
-      <li>🤖 Onboarding, helpbot, FAQ, advanced docs & guides</li>
-    </ul>
+# Nebula Ultimate
 
-    <h2 id="install">Install on Linux</h2>
-    <ol>
-      <li>
-        <b>Download</b> latest release:<br>
-        <code>wget https://github.com/SpidermanTotro/nebulultimate/releases/latest/download/nebula-ultimate.AppImage</code>
-      </li>
-      <li>
-        <b>Make it executable & run:</b><br>
-        <code>chmod +x nebula-ultimate.AppImage</code><br>
-        <code>./nebula-ultimate.AppImage</code>
-      </li>
-      <li>
-        <b>For .deb or .tar.gz:</b><br>
-        <code>wget https://github.com/SpidermanTotro/nebulultimate/releases/latest/download/nebula-ultimate.deb</code><br>
-        <code>sudo dpkg -i nebula-ultimate.deb</code>
-      </li>
-      <li><b>For source: </b><code>git clone https://github.com/SpidermanTotro/nebulultimate.git</code> <br>Follow <code>README.md</code> instructions</li>
-    </ol>
+**Free, Offline, Open and Infinitely Expandable Development Platform**
 
-    <h2>Integrity Check</h2>
-    <ul>
-      <li>All files/modules verified and 100% functional</li>
-      <li>Check hashes/signatures in release notes (<code>sha256sum nebula-ultimate.AppImage</code>)</li>
-      <li>All toolbars/features load on first run; comprehensive onboarding and help</li>
-    </ul>
+[Visit the Website](https://spidermantotro.github.io/-https-SpidermanTotro.github.io-nebula-ultimate-/) | [ChatGPT Extractor Tool](https://spidermantotro.github.io/-https-SpidermanTotro.github.io-nebula-ultimate-/chatgpt-extractor.html)
 
-    <h2>Quick Start</h2>
-    <ul>
-      <li>Launch Nebula Ultimate and start the onboarding missions</li>
-      <li>Explore all toolbars: plugin hub, GameDev, analytics, assets/templates, event engine</li>
-      <li>Join the first jam, contest, or federation event</li>
-      <li>Open helpbot or docs for guides/tips</li>
-    </ul>
+## Features
 
-    <h2>Community & Support</h2>
-    <ul>
-      <li>Submit your plugins, assets, themes</li>
-      <li>Attend digital jams, onboarding webinars, and open forums</li>
-      <li>Read and contribute to FAQ/guides/tutorials</li>
-      <li>Contact support and helpbot directly in-app</li>
-    </ul>
+- 🧠 Core AI coding: codegen, refactor, bugfix, explain & more
+- 📋 Project boards, team/family/studio flows, attachments, collab
+- 🌌 Plugin & extension hub: community-driven, easy upgrades
+- 🎮 GameDev toolkit: multiplayer, jams, events, device mapping (VR, gamepad, tablet)
+- 📊 Analytics & dashboard: real-time stats, logs, visualizations
+- 🚀 Asset/template marketplace: submit, rate, moderate
+- 🌐 Federation: global contests, leaderboards, events
+- 🗣️ Accessibility: multi-language, voice/touch, onboarding missions
+- 🔄 Migration/import/export: Unity, Godot, JetBrains, VS, ChatGPT, etc.
+- 🤖 Onboarding, helpbot, FAQ, advanced docs & guides
 
-    <div class="footer">
-      Nebula Ultimate © 2025 &mdash; Free, Open, and Always Expanding<br>
-      <br>
-      Need installation help? <a href="https://github.com/SpidermanTotro/nebulultimate/issues">Open an issue</a> or ask in the community forum.
-    </div>
-  </div>
-</body>
-</html>
+## ChatGPT Export Extractor
+
+A powerful tool to extract and analyze your ChatGPT conversation exports:
+
+- Upload your ChatGPT export file (conversations.json)
+- View conversation statistics and search through messages
+- Export conversations in multiple formats: JSON, Text, Markdown, or HTML
+- Perfect for archiving, analyzing, or migrating your AI conversations
+
+[Launch ChatGPT Extractor](https://spidermantotro.github.io/-https-SpidermanTotro.github.io-nebula-ultimate-/chatgpt-extractor.html)
+
+## Installation
+
+Visit the [main website](https://spidermantotro.github.io/-https-SpidermanTotro.github.io-nebula-ultimate-/) for detailed installation instructions.
+
+## Repository Structure
+
+- `index.html` - Main website homepage
+- `chatgpt-extractor.html` - ChatGPT Export Extractor tool
+- `sample-chatgpt-export.json` - Sample data for testing the extractor
+
+## Contributing
+
+We welcome contributions! Please feel free to submit issues and pull requests.
+
+## License
+
+Nebula Ultimate © 2025 — Free, Open, and Always Expanding
