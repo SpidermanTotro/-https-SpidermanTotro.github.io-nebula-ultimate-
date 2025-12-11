@@ -78,5 +78,114 @@
         }
       }
     }
+  },
+  {
+    "title": "Building a REST API with Express",
+    "create_time": 1701236000,
+    "update_time": 1701236500,
+    "mapping": {
+      "msg1": {
+        "message": {
+          "author": {
+            "role": "user"
+          },
+          "content": {
+            "parts": ["I want to build a simple REST API with Node.js and Express. Can you show me how?"]
+          },
+          "create_time": 1701236000
+        }
+      },
+      "msg2": {
+        "message": {
+          "author": {
+            "role": "assistant"
+          },
+          "content": {
+            "parts": ["Here's a simple REST API example using Express:\n\n```javascript\nconst express = require('express');\nconst app = express();\n\n// Middleware\napp.use(express.json());\n\n// Sample data\nlet users = [\n  { id: 1, name: 'Alice', email: 'alice@example.com' },\n  { id: 2, name: 'Bob', email: 'bob@example.com' }\n];\n\n// GET all users\napp.get('/api/users', (req, res) => {\n  res.json(users);\n});\n\n// GET single user\napp.get('/api/users/:id', (req, res) => {\n  const user = users.find(u => u.id === parseInt(req.params.id));\n  if (!user) return res.status(404).json({ error: 'User not found' });\n  res.json(user);\n});\n\n// POST new user\napp.post('/api/users', (req, res) => {\n  const newUser = {\n    id: users.length + 1,\n    name: req.body.name,\n    email: req.body.email\n  };\n  users.push(newUser);\n  res.status(201).json(newUser);\n});\n\n// Start server\nconst PORT = process.env.PORT || 3000;\napp.listen(PORT, () => {\n  console.log(`Server running on port ${PORT}`);\n});\n```\n\nThis creates a basic CRUD API with GET and POST endpoints for managing users."]
+          },
+          "create_time": 1701236200
+        }
+      },
+      "msg3": {
+        "message": {
+          "author": {
+            "role": "user"
+          },
+          "content": {
+            "parts": ["How do I add DELETE and PUT endpoints?"]
+          },
+          "create_time": 1701236300
+        }
+      },
+      "msg4": {
+        "message": {
+          "author": {
+            "role": "assistant"
+          },
+          "content": {
+            "parts": ["Here are the DELETE and PUT endpoints:\n\n```javascript\n// PUT update user\napp.put('/api/users/:id', (req, res) => {\n  const user = users.find(u => u.id === parseInt(req.params.id));\n  if (!user) return res.status(404).json({ error: 'User not found' });\n  \n  user.name = req.body.name || user.name;\n  user.email = req.body.email || user.email;\n  res.json(user);\n});\n\n// DELETE user\napp.delete('/api/users/:id', (req, res) => {\n  const index = users.findIndex(u => u.id === parseInt(req.params.id));\n  if (index === -1) return res.status(404).json({ error: 'User not found' });\n  \n  const deleted = users.splice(index, 1);\n  res.json({ message: 'User deleted', user: deleted[0] });\n});\n```\n\nNow you have a complete CRUD API!"]
+          },
+          "create_time": 1701236450
+        }
+      }
+    }
+  },
+  {
+    "title": "CSS Grid Layout Tutorial",
+    "create_time": 1701237000,
+    "update_time": 1701237300,
+    "mapping": {
+      "msg1": {
+        "message": {
+          "author": {
+            "role": "user"
+          },
+          "content": {
+            "parts": ["Can you teach me CSS Grid basics?"]
+          },
+          "create_time": 1701237000
+        }
+      },
+      "msg2": {
+        "message": {
+          "author": {
+            "role": "assistant"
+          },
+          "content": {
+            "parts": ["CSS Grid is a powerful layout system. Here's a basic example:\n\n```css\n.container {\n  display: grid;\n  grid-template-columns: repeat(3, 1fr);\n  grid-gap: 20px;\n  padding: 20px;\n}\n\n.item {\n  background: #3498db;\n  padding: 20px;\n  color: white;\n  text-align: center;\n}\n\n/* Responsive layout */\n@media (max-width: 768px) {\n  .container {\n    grid-template-columns: 1fr;\n  }\n}\n```\n\n```html\n<div class=\"container\">\n  <div class=\"item\">Item 1</div>\n  <div class=\"item\">Item 2</div>\n  <div class=\"item\">Item 3</div>\n  <div class=\"item\">Item 4</div>\n  <div class=\"item\">Item 5</div>\n  <div class=\"item\">Item 6</div>\n</div>\n```\n\nThis creates a 3-column grid that becomes single column on mobile."]
+          },
+          "create_time": 1701237150
+        }
+      }
+    }
+  },
+  {
+    "title": "React Hooks useState and useEffect",
+    "create_time": 1701238000,
+    "update_time": 1701238400,
+    "mapping": {
+      "msg1": {
+        "message": {
+          "author": {
+            "role": "user"
+          },
+          "content": {
+            "parts": ["What are React hooks and how do I use useState and useEffect?"]
+          },
+          "create_time": 1701238000
+        }
+      },
+      "msg2": {
+        "message": {
+          "author": {
+            "role": "assistant"
+          },
+          "content": {
+            "parts": ["React Hooks let you use state and other React features in functional components. Here's how to use `useState` and `useEffect`:\n\n```javascript\nimport React, { useState, useEffect } from 'react';\n\nfunction Counter() {\n  // useState Hook - manages component state\n  const [count, setCount] = useState(0);\n  const [name, setName] = useState('Guest');\n\n  // useEffect Hook - side effects\n  useEffect(() => {\n    // Runs after every render\n    document.title = `Count: ${count}`;\n    console.log('Component rendered or count changed');\n    \n    // Cleanup function (optional)\n    return () => {\n      console.log('Cleanup');\n    };\n  }, [count]); // Only re-run if count changes\n\n  useEffect(() => {\n    // Runs once on mount (empty dependency array)\n    console.log('Component mounted');\n    fetchData();\n  }, []);\n\n  return (\n    <div>\n      <h1>Hello, {name}!</h1>\n      <p>Count: {count}</p>\n      <button onClick={() => setCount(count + 1)}>Increment</button>\n      <button onClick={() => setCount(count - 1)}>Decrement</button>\n      <input \n        value={name} \n        onChange={(e) => setName(e.target.value)} \n        placeholder=\"Enter name\"\n      />\n    </div>\n  );\n}\n```\n\nKey points:\n- `useState` returns [value, setter function]\n- `useEffect` runs side effects after render\n- Dependency array controls when effect re-runs\n- Empty array [] means run once on mount\n- No array means run on every render"]
+          },
+          "create_time": 1701238250
+        }
+      }
+    }
   }
 ]

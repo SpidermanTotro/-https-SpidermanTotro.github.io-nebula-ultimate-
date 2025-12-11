@@ -43,6 +43,11 @@
     .back-link { color: #50b6ff; text-decoration: none; display: inline-block; margin-bottom: 1em; }
     .back-link:hover { text-decoration: underline; }
     .footer { margin-top: 3em; padding-top: 2em; border-top: 1px solid #2a3a5a; color: #888; font-size: 0.9em; text-align: center; }
+    .instructions { background: #1a2642; padding: 1.5rem; border-radius: 8px; margin: 2rem 0; border-left: 4px solid #ffe488; }
+    .instructions ol { margin: 1em 0; padding-left: 1.5em; }
+    .instructions li { margin: 0.5em 0; line-height: 1.6; }
+    .demo-btn { background: #ffe488; color: #0b1124; margin-left: 1em; }
+    .demo-btn:hover { background: #ffed9f; }
     @media (max-width: 600px) { .container { padding:1em; } h1 {font-size:1.3em;} .stats { grid-template-columns: 1fr; } }
   </style>
 </head>
@@ -53,10 +58,24 @@
     <p><strong>Extract and analyze your ChatGPT conversation exports</strong></p>
     <p>Upload your ChatGPT export file (conversations.json) to parse, view, and export your conversation data in various formats.</p>
 
+    <div class="instructions">
+      <h2>📥 How to Export Your ChatGPT Conversations</h2>
+      <ol>
+        <li>Go to <strong>ChatGPT</strong> (chat.openai.com)</li>
+        <li>Click on your <strong>profile icon</strong> in the bottom left corner</li>
+        <li>Select <strong>"Settings"</strong> from the menu</li>
+        <li>Go to <strong>"Data controls"</strong> → <strong>"Export data"</strong></li>
+        <li>Click <strong>"Export"</strong> and wait for the email with your download link</li>
+        <li>Download the ZIP file, extract it, and find <strong>conversations.json</strong></li>
+        <li>Upload the conversations.json file below!</li>
+      </ol>
+    </div>
+
     <div class="upload-section">
       <h2>Upload ChatGPT Export</h2>
       <input type="file" id="fileInput" class="file-input" accept=".json" />
       <label for="fileInput" class="file-label">Choose File</label>
+      <button class="btn demo-btn" onclick="loadDemoData()">Try Demo Data</button>
       <span id="fileName" style="margin-left: 1em; color: #888;">No file selected</span>
       <div id="status" class="status"></div>
     </div>
@@ -396,6 +415,21 @@
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
       showStatus('success', `Downloaded ${filename}`);
+    }
+
+    function loadDemoData() {
+      fileName.textContent = 'sample-chatgpt-export.json (Demo)';
+      showStatus('info', 'Loading demo data...');
+      
+      // Load the sample data file
+      fetch('sample-chatgpt-export.json')
+        .then(response => response.json())
+        .then(data => {
+          processExportData(data);
+        })
+        .catch(error => {
+          showStatus('error', 'Error loading demo data: ' + error.message);
+        });
     }
   </script>
 </body>
