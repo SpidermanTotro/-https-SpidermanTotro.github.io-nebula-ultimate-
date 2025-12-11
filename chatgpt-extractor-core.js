@@ -108,6 +108,18 @@ const ChatGPTExtractorCore = (function() {
    */
   function escapeHtml(text) {
     if (!text) return '';
+    
+    // Handle Node.js environment (for testing)
+    if (typeof document === 'undefined') {
+      return String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+    
+    // Browser environment
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
@@ -282,7 +294,18 @@ const ChatGPTExtractorCore = (function() {
     }
 
     // Handle different ChatGPT export formats
-    const conversations = Array.isArray(data) ? data : (data.conversations || [data]);
+    let conversations;
+    
+    if (Array.isArray(data)) {
+      conversations = data;
+    } else if (data.conversations && Array.isArray(data.conversations)) {
+      conversations = data.conversations;
+    } else if (typeof data === 'object') {
+      // Single conversation object
+      conversations = [data];
+    } else {
+      conversations = [];
+    }
     
     if (conversations.length === 0) {
       throw new Error('No conversations found in the export file');
